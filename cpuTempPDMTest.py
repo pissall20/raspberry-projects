@@ -13,8 +13,8 @@ y = []
 
 # entering data into a csv file
 def write_temp(temp):
-    print("Time: {0}, CPU Temperature: {1}".format(strftime("%Y-%m-%d %H:%M:%S"), str(temp)))
-    with open("/home/pi/Desktop/pdm/cpu_temp.csv", "a") as log:
+    print(f"Time: {strftime("%Y-%m-%d %H:%M:%S")}, CPU Temperature: {str(temp)}")
+    with open("files/cpu_temp.csv", "a") as log:
         log.write("{0}, {1}\n".format(strftime("%Y-%m-%d %H:%M:%S"), str(temp)))
 
 
