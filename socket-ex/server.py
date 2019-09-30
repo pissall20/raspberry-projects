@@ -18,6 +18,6 @@ conn.send('Thank you for connecting')
 while True:
     print(conn.recv(1024).decode("ascii"))
     # Close the connection with the client 
-    # c.close() 
+    # conn.close() 
     time.sleep(1)
 
