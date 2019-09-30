@@ -19,4 +19,4 @@ while True:
         "time": str(datetime.datetime.now())
         })
     time.sleep(1)
-    
+
