@@ -83,6 +83,8 @@ OTHER
 """
 logged_users = list(map(lambda x: x.name, psutil.users()))
 
-boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).strftime("%Y-%m-%d %H:%M:%S")
+boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).strftime(
+    "%Y-%m-%d %H:%M:%S"
+)
 
 n_processes = len(psutil.pids())
