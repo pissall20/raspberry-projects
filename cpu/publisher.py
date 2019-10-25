@@ -52,7 +52,7 @@ class KafkaStatsPublisher:
         load_avg_dict = {
             k: v
             for k, v in zip(
-                ["1_min", "5_min", "15_min"],
+                ["min_1", "min_5", "min_15"],
                 [x / psutil.cpu_count() * 100 for x in psutil.getloadavg()],
             )
         }
