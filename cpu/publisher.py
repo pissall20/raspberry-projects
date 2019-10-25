@@ -1,15 +1,19 @@
 import datetime
 import json
+import socket
 
 import psutil
 from kafka import KafkaProducer
-
-from cpu.utils import get_ip
+from multiprocessing import Process
 
 
 class KafkaStatsPublisher:
+    """
+    A Kafka Publisher to send data about the system statistics, gathered by using psutil package.
+    """
+
     def __init__(self):
-        self.IP_ADDRESS = get_ip()
+        self.IP_ADDRESS = self.get_ip()
         self.n_cpu = psutil.cpu_count()
         self.cpu_ids = [f"cpu_{cpu_id}" for cpu_id in range(1, self.n_cpu + 1)]
         self.kafka_conn = None
@@ -40,9 +44,10 @@ class KafkaStatsPublisher:
         )
 
         total_cpu_usage_percent = psutil.cpu_percent()
-        per_cpu_usage_percent_dict = {
-            k: v for k, v in zip(self.cpu_ids, psutil.cpu_percent(percpu=True))
-        }
+        per_cpu_usage_percent_dict = [
+            {"id": cpu_id, "percent": percent}
+            for cpu_id, percent in zip(self.cpu_ids, psutil.cpu_percent(percpu=True))
+        ]
 
         load_avg_dict = {
             k: v
@@ -126,7 +131,27 @@ class KafkaStatsPublisher:
         kafka_conn.send(topic, self.get_all_stats())
         return
 
+    @staticmethod
+    def get_ip():
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("1.0.0.1", 1))
+            IP = s.getsockname()[0]
+        except:
+            IP = "127.0.0.1"
+        finally:
+            s.close()
+        return IP
+
 
 stats = KafkaStatsPublisher()
-stats.publish_to_kafka("localhost", 9042, "system_stats")
+from time import time
 
+start = time()
+stats.publish_to_kafka("localhost", 9092, "system_stats", keep_alive=False)
+end = time()
+
+abcd = stats.get_all_stats()
+
+print(f"{end-start} seconds")
