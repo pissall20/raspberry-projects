@@ -4,7 +4,6 @@ import socket
 
 import psutil
 from kafka import KafkaProducer
-from multiprocessing import Process
 
 
 class KafkaStatsPublisher:
@@ -143,15 +142,3 @@ class KafkaStatsPublisher:
         finally:
             s.close()
         return IP
-
-
-stats = KafkaStatsPublisher()
-from time import time
-
-start = time()
-stats.publish_to_kafka("localhost", 9092, "system_stats", keep_alive=False)
-end = time()
-
-abcd = stats.get_all_stats()
-
-print(f"{end-start} seconds")
