@@ -1,0 +1,18 @@
+version: "3"
+services:
+    mqtt-broker:
+        container_name: mqtt-broker
+        image: emqx/emqx
+        ports:
+            - "1883:1883"
+    publisher:
+        depends_on: 
+            - mqtt-broker
+        container_name: publisher
+        restart: always
+        build: 
+            dockerfile: Dockerfile
+            context: .
+        command: python /app/publisher.py
+        links:
+            - mqtt-broker
