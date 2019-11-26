@@ -1,0 +1,18 @@
+version: "3"
+services:
+    timescaledb:
+        container_name: timescaledb
+        image: timescale/timescaledb
+        ports:
+            - "5432:5432"
+    subscriber:
+        depends_on: 
+            - timescaledb
+        container_name: subscriber
+        restart: always
+        build: 
+            dockerfile: Dockerfile
+            context: .
+        command: python /app/subscriber.py
+        links:
+            - timescaledb
