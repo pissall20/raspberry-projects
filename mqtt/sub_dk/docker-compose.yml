@@ -5,9 +5,15 @@ services:
         image: timescale/timescaledb
         ports:
             - "5432:5432"
+    mqtt-broker:
+        container_name: mqtt-broker
+        image: emqx/emqx
+        ports:
+            - "1883:1883"
     subscriber:
         depends_on: 
             - timescaledb
+            - mqtt-broker
         container_name: subscriber
         restart: always
         build: 
@@ -16,3 +22,4 @@ services:
         command: python /app/subscriber.py
         links:
             - timescaledb
+            - mqtt-broker
