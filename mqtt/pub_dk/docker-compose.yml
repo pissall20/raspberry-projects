@@ -1,7 +1,7 @@
 version: "3"
 services:
     mqtt-broker:
-        container_name: mqtt-broker
+        container_name: mqtt-broker-pub
         image: emqx/emqx
         ports:
             - "1883:1883"
@@ -15,4 +15,4 @@ services:
             context: .
         command: python /app/publisher.py
         links:
-            - mqtt-broker
+            - mqtt-broker-pub
