@@ -7,7 +7,7 @@ services:
             - "1883:1883"
     publisher:
         depends_on: 
-            - mqtt-broker
+            - mqtt-broker-pub
         container_name: publisher
         restart: always
         build: 
