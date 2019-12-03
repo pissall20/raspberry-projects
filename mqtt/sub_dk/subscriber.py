@@ -6,7 +6,7 @@ import json
 #from kafka import KafkaProducer
 import psycopg2
 
-broker = "mqtt-broker"
+broker = "172.16.18.71"
 topic = "mqtt-test"
 
 bootstap_server_ip = "kafka"
