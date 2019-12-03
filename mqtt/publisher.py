@@ -3,6 +3,7 @@ import os
 import json
 import time
 import psutil
+import numpy as np
 from datetime import datetime
 
 broker = "172.16.6.57"
@@ -22,8 +23,8 @@ client_1.connect(broker, port, keepalive=60)
 
 while True:
     payload = {
-        "temperature": 34,
-        "humidity": 80
+        "temperature": np.random.randint(20, 45),
+        "humidity": np.random.randint(60, 100)
     }
     ret = client_1.publish(topic, json.dumps(payload))
     print(payload)

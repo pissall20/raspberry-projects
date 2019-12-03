@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 import json
 
-broker = "172.16.6.57"
+broker = "172.16.18.71"
 topic = "mqtt-test"
 
 def on_message(client, userdata, message):
