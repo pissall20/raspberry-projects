@@ -13,7 +13,7 @@ services:
     subscriber:
         depends_on: 
             - timescaledb
-            - mqtt-broker
+            - mqtt-broker-sub
         container_name: subscriber
         restart: always
         build: 
