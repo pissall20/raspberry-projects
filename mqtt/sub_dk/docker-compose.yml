@@ -23,7 +23,7 @@ services:
         build: 
             dockerfile: Dockerfile
             context: .
-        command: bash -c "python /app/create_db_setup.py && python /app/subscriber.py"
+        command: bash -c "python /app/subscriber.py"
         links:
             - timescaledb
             - mqtt-broker-sub
