@@ -2,37 +2,37 @@ import json
 from datetime import datetime
 
 import paho.mqtt.client as paho
-
-from .create_db_setup import ConnectDatabase
+from create_db_setup import ConnectDatabase
 
 broker = "172.16.18.71"
 topic = "mqtt-test"
 
 db_params = {
     "db_name": "iot_mqtt_test",
-    "host": "timescaledb",
+    # "host": "timescaledb",
+    "host": "localhost",
     "user": "postgres",
     "password": "postgres",
-    "db_table_name": "temp_humidity"
+    "table_name": "temp_humidity"
 }
 
 time_pk = "datetime"
-table_name = "temp_hum"
+# table_name = "temp_hum"
 
 db_conn = ConnectDatabase(**db_params)
-db_conn.create_table(time_pk, table_name)
+db_conn.create_table(db_params.get("table_name"), time_pk)
 
 
 def on_message(client, userdata, message):
     print("Recieved data is:")
     print(json.loads(message.payload))
     recv_data = json.loads(message.payload)
-    recv_data['datetime'] = datetime.now()
-    columns = ",".join(recv_data.keys())
-    values = "VALUES({})".format(",".join(recv_data.values()))
-    insert_stmt = "INSERT INTO {} ({}) {}".format(table_name, columns, values)
+
+    insert_stmt = "INSERT INTO temp_humidity (temperature,humidity,datetime) VALUES (%s,%s,%s)"
+    data = (recv_data["temperature"], recv_data["humidity"], datetime.now())
     cursor = db_conn.connection.cursor()
-    cursor.execute(insert_stmt)
+    cursor.execute(insert_stmt, data)
+    db_conn.connection.commit()
 
 
 client = paho.Client("user")
