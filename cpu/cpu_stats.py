@@ -1,5 +1,7 @@
-import psutil
 import datetime
+import time
+
+import psutil
 
 from cpu.utils import get_ip
 
@@ -48,11 +50,27 @@ swap_memory_stats = {
     if k != "percent"
 }
 
-
 """
 NETWORK
 """
 net_io = dict(psutil.net_io_counters()._asdict())
+
+
+def get_network_bandwidth():
+    old_value = 0
+
+    def convert_to_gbit(value):
+        return value / 1024. / 1024. / 1024. * 8
+
+    def send_stat(value):
+        print("%0.3f" % convert_to_gbit(value))
+
+    while True:
+        new_value = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
+        if old_value:
+            send_stat(new_value - old_value)
+        old_value = new_value
+        time.sleep(1)
 
 
 """
