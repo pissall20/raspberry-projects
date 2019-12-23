@@ -17,6 +17,9 @@ class KafkaStatsPublisher:
         self.cpu_ids = [f"cpu_{cpu_id}" for cpu_id in range(1, self.n_cpu + 1)]
         self.kafka_conn = None
 
+        # For network bandwidth
+        self.processed_bytes = 0
+
     def kafka_connection(self, ip_address, port):
         if not self.kafka_conn:
             producer = KafkaProducer(
@@ -80,9 +83,20 @@ class KafkaStatsPublisher:
             "swap_memory": swap_memory_stats,
         }
 
+    @staticmethod
+    def convert_to_gbit(value):
+        return round(value / 1024. / 1024. / 1024. * 8, 3)
+
+    def get_network_bandwidth(self):
+        new_reading = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
+        if self.processed_bytes:
+            bandwidth = self.convert_to_gbit(new_reading - self.processed_bytes)
+            return bandwidth
+        self.processed_bytes = new_reading
+        return self.processed_bytes
+
     def get_network_stats(self):
-        net_io = dict(psutil.net_io_counters()._asdict())
-        return {"net_io": net_io}
+        return {"net_io": self.get_network_bandwidth()}
 
     def get_storage_stats(self):
         disk_usage = {
