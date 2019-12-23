@@ -106,6 +106,28 @@ class KafkaStatsPublisher:
         }
         return {"disk_usage": disk_usage}
 
+    def get_process_sorted_by_memory(self, top_n):
+        """
+        Get list of running processes sorted by Memory Usage
+        """
+        list_of_processes = []
+        # Iterate over the list
+        for proc in psutil.process_iter():
+            try:
+                # Fetch process details as dict
+                pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
+                pinfo['memory_used'] = proc.memory_info().vms / (1024 * 1024)
+                # Append dict to list
+                list_of_processes.append(pinfo)
+            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                pass
+
+        # Sort list of dict by key vms i.e. memory usage
+        list_of_process_objs = sorted(list_of_processes, key=lambda process: process['memory_used'], reverse=True)
+        if top_n:
+            list_of_process_objs = list_of_process_objs[:top_n]
+        return list_of_process_objs
+
     def get_misc_stats(self):
         logged_users = list(map(lambda x: x.name, psutil.users()))
         boot_time = datetime.datetime.fromtimestamp(psutil.boot_time()).strftime(
@@ -124,6 +146,7 @@ class KafkaStatsPublisher:
         network_stats = self.get_network_stats()
         storage_stats = self.get_storage_stats()
         misc_stats = self.get_misc_stats()
+        process_stats = self.get_process_sorted_by_memory(top_n=10)
         return {
             **cpu_stats,
             **memory_stats,
@@ -133,6 +156,7 @@ class KafkaStatsPublisher:
             "date_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "unique_id": self.IP_ADDRESS,
             "n_cpus": self.n_cpu,
+            "processes_by_mem": process_stats
         }
 
     def publish_to_kafka(self, ip_address, port, topic, keep_alive=True):
