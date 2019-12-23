@@ -116,7 +116,8 @@ class KafkaStatsPublisher:
             try:
                 # Fetch process details as dict
                 pinfo = proc.as_dict(attrs=['pid', 'name', 'username'])
-                pinfo['memory_used'] = proc.memory_info().vms / (1024 * 1024)
+                pinfo['memory_used'] = round(proc.memory_info().rss / (1024 * 1024), 3)
+                pinfo['virtual_memory_size'] = round(proc.memory_info().vms / (1024 * 1024), 3)
                 # Append dict to list
                 list_of_processes.append(pinfo)
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
