@@ -96,7 +96,9 @@ class KafkaStatsPublisher:
         return self.processed_bytes
 
     def get_network_stats(self):
-        return {"net_io": self.get_network_bandwidth()}
+        net_io = dict(psutil.net_io_counters()._asdict())
+        net_io["bandwidth_usage"] = self.get_network_bandwidth()
+        return {"net_io": net_io}
 
     def get_storage_stats(self):
         disk_usage = {
