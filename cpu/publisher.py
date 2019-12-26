@@ -1,6 +1,7 @@
 import datetime
 import json
 import socket
+import requests
 
 import psutil
 from kafka import KafkaProducer
@@ -19,6 +20,7 @@ class KafkaStatsPublisher:
 
         # For network bandwidth
         self.processed_bytes = 0
+        self.weather_today = self.get_weather("Mumbai")
 
     def kafka_connection(self, ip_address, port):
         if not self.kafka_conn:
@@ -150,6 +152,7 @@ class KafkaStatsPublisher:
         storage_stats = self.get_storage_stats()
         misc_stats = self.get_misc_stats()
         process_stats = self.get_process_sorted_by_memory(top_n=10)
+
         return {
             **cpu_stats,
             **memory_stats,
@@ -159,14 +162,15 @@ class KafkaStatsPublisher:
             "date_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "unique_id": self.IP_ADDRESS,
             "n_cpus": self.n_cpu,
-            "processes_by_mem": process_stats
+            "processes_by_mem": process_stats,
+            "weather": self.weather_today
         }
 
     def publish_to_kafka(self, ip_address, port, topic, keep_alive=True):
         kafka_conn = self.kafka_connection(ip_address, port)
         while keep_alive:
             kafka_conn.send(topic, self.get_all_stats())
-            psutil.time.sleep(1)
+            psutil.time.sleep(10)
 
         kafka_conn.send(topic, self.get_all_stats())
         return
@@ -183,3 +187,25 @@ class KafkaStatsPublisher:
         finally:
             s.close()
         return IP
+
+    def get_weather(self, city):
+        base_url = "http://api.openweathermap.org/data/2.5/weather?"
+        api_key = "6b43a832b499502b2c9ec8150a525748"
+        complete_url = base_url + "appid=" + api_key + "&q=" + city
+        response = requests.get(complete_url)
+        x = response.json()
+        if x["cod"] != "404":
+            # Convert kelvin unit temp to celcius
+            current_temperature = x["main"]["temp"] - 273.15
+            current_pressure = x["main"]["pressure"]
+            current_humidiy = x["main"]["humidity"]
+            return {
+                "temperature": current_temperature,
+                "humidity": current_humidiy,
+                "pressure": current_pressure
+            }
+        else:
+            return {
+                "error": "City not found"
+            }
+
